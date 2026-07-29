@@ -1,0 +1,11 @@
+/.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.log
+TestResults/
+coverage/
+.idea/
+.DS_Store
+Thumbs.db

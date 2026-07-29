@@ -5,18 +5,22 @@ using TaskNotesAPI.Interfaces;
 
 namespace TaskNotesAPI.Services
 {
-    public class AuthService: IAuthService
+    public class AuthService : IAuthService
     {
         private readonly UserManager<UsuarioAplicacion> _userManager;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(UserManager<UsuarioAplicacion> userManager)
+        public AuthService(
+            UserManager<UsuarioAplicacion> userManager,
+            ITokenService tokenService)
         {
             _userManager = userManager;
+            _tokenService = tokenService;
         }
 
         public async Task<AuthRespuestaDTO> RegistrarAsync(
-        RegistroDTO registroDTO,
-        CancellationToken cancellationToken)
+            RegistroDTO registroDTO,
+            CancellationToken cancellationToken)
         {
             var usuarioExistente = await _userManager
                 .FindByEmailAsync(registroDTO.Email);
@@ -47,13 +51,16 @@ namespace TaskNotesAPI.Services
                 throw new InvalidOperationException(errores);
             }
 
+            var tokenRespuesta = await _tokenService
+                .GenerarTokenAsync(usuario);
+
             return new AuthRespuestaDTO
             {
                 UsuarioId = usuario.Id,
                 Nombre = usuario.Nombre,
                 Email = usuario.Email!,
-                Token = string.Empty,
-                ExpiracionToken = DateTime.MinValue
+                Token = tokenRespuesta.Token,
+                ExpiracionToken = tokenRespuesta.Expiracion
             };
         }
     }

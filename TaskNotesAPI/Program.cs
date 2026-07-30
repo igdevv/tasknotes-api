@@ -53,6 +53,7 @@ var jwtSettings = builder.Configuration
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<INotaService, NotaService>();
 
 builder.Services
     .AddAuthentication(options =>

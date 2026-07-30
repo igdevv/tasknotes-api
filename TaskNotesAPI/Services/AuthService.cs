@@ -10,9 +10,7 @@ namespace TaskNotesAPI.Services
         private readonly UserManager<UsuarioAplicacion> _userManager;
         private readonly ITokenService _tokenService;
 
-        public AuthService(
-            UserManager<UsuarioAplicacion> userManager,
-            ITokenService tokenService)
+        public AuthService(UserManager<UsuarioAplicacion> userManager, ITokenService tokenService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -49,6 +47,38 @@ namespace TaskNotesAPI.Services
                     resultado.Errors.Select(error => error.Description));
 
                 throw new InvalidOperationException(errores);
+            }
+
+            var tokenRespuesta = await _tokenService
+                .GenerarTokenAsync(usuario);
+
+            return new AuthRespuestaDTO
+            {
+                UsuarioId = usuario.Id,
+                Nombre = usuario.Nombre,
+                Email = usuario.Email!,
+                Token = tokenRespuesta.Token,
+                ExpiracionToken = tokenRespuesta.Expiracion
+            };
+        }
+        public async Task<AuthRespuestaDTO> LoginAsync(LoginDTO loginDTO, CancellationToken cancellationToken)
+        {
+            var usuario = await _userManager
+                .FindByEmailAsync(loginDTO.Email);
+
+            if (usuario is null)
+            {
+                throw new InvalidOperationException(
+                    "Correo o contraseña incorrectos.");
+            }
+
+            var passwordValida = await _userManager
+                .CheckPasswordAsync(usuario, loginDTO.Password);
+
+            if (!passwordValida)
+            {
+                throw new InvalidOperationException(
+                    "Correo o contraseña incorrectos.");
             }
 
             var tokenRespuesta = await _tokenService

@@ -63,12 +63,43 @@ namespace TaskNotesAPI.Services
         }
 
         public async Task<List<NotaDTO>> ObtenerTodasAsync(
-            string usuarioId,
-            CancellationToken cancellationToken)
+        FiltroNotasDTO filtros,
+        string usuarioId,
+        CancellationToken cancellationToken)
         {
-            return await _context.Notas
+            var query = _context.Notas
                 .AsNoTracking()
                 .Where(nota => nota.UsuarioId == usuarioId)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filtros.Buscar))
+            {
+                var texto = filtros.Buscar.Trim();
+
+                query = query.Where(nota =>
+                    nota.Titulo.Contains(texto) ||
+                    nota.Contenido.Contains(texto));
+            }
+
+            if (filtros.Prioridad.HasValue)
+            {
+                query = query.Where(nota =>
+                    nota.Prioridad == filtros.Prioridad.Value);
+            }
+
+            if (filtros.CategoriaId.HasValue)
+            {
+                query = query.Where(nota =>
+                    nota.CategoriaId == filtros.CategoriaId.Value);
+            }
+
+            if (filtros.EsImportante.HasValue)
+            {
+                query = query.Where(nota =>
+                    nota.EsImportante == filtros.EsImportante.Value);
+            }
+
+            return await query
                 .OrderByDescending(nota => nota.FechaCreacion)
                 .Select(nota => new NotaDTO
                 {
@@ -159,6 +190,65 @@ namespace TaskNotesAPI.Services
                 FechaCreacion = nota.FechaCreacion,
                 CategoriaId = nota.CategoriaId,
                 CategoriaNombre = categoria.Nombre
+            };
+        }
+
+        public async Task<bool> EliminarAsync(
+            int notaId,
+            string usuarioId,
+            CancellationToken cancellationToken)
+        {
+            var nota = await _context.Notas
+                .FirstOrDefaultAsync(
+                    nota =>
+                        nota.Id == notaId &&
+                        nota.UsuarioId == usuarioId,
+                    cancellationToken);
+
+            if (nota is null)
+            {
+                return false;
+            }
+
+            _context.Notas.Remove(nota);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+
+        public async Task<NotaDTO?> CambiarImportanteAsync(
+            int notaId,
+            string usuarioId,
+            CancellationToken cancellationToken)
+        {
+            var nota = await _context.Notas
+                .Include(nota => nota.Categoria)
+                .FirstOrDefaultAsync(
+                    nota =>
+                        nota.Id == notaId &&
+                        nota.UsuarioId == usuarioId,
+                    cancellationToken);
+
+            if (nota is null)
+            {
+                return null;
+            }
+
+            nota.EsImportante = !nota.EsImportante;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return new NotaDTO
+            {
+                Id = nota.Id,
+                Titulo = nota.Titulo,
+                Contenido = nota.Contenido,
+                Prioridad = nota.Prioridad,
+                EsImportante = nota.EsImportante,
+                FechaCreacion = nota.FechaCreacion,
+                CategoriaId = nota.CategoriaId,
+                CategoriaNombre = nota.Categoria.Nombre
             };
         }
     }

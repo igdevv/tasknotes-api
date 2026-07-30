@@ -10,6 +10,7 @@ namespace TaskNotesAPI.Interfaces
         CancellationToken cancellationToken);
 
         Task<List<NotaDTO>> ObtenerTodasAsync(
+        FiltroNotasDTO filtros,
         string usuarioId,
         CancellationToken cancellationToken);
 
@@ -21,6 +22,16 @@ namespace TaskNotesAPI.Interfaces
         Task<NotaDTO?> ActualizarAsync(
         int notaId,
         ActualizarNotaDTO actualizarNotaDTO,
+        string usuarioId,
+        CancellationToken cancellationToken);
+
+        Task<bool> EliminarAsync(
+        int notaId,
+        string usuarioId,
+        CancellationToken cancellationToken);
+
+        Task<NotaDTO?> CambiarImportanteAsync(
+        int notaId,
         string usuarioId,
         CancellationToken cancellationToken);
     }

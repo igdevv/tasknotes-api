@@ -50,7 +50,9 @@ var jwtSettings = builder.Configuration
     ?? throw new InvalidOperationException(
         "No se encontró la configuración JWT.");
 
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
 builder.Services
     .AddAuthentication(options =>

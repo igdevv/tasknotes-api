@@ -4,6 +4,13 @@ obj/
 *.user
 *.suo
 *.log
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json
 TestResults/
 coverage/
 .idea/

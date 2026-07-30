@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskNotesAPI.DTOs.Notas;
+using TaskNotesAPI.Helpers;
 using TaskNotesAPI.Interfaces;
 
 namespace TaskNotesAPI.Controllers
@@ -40,7 +41,7 @@ namespace TaskNotesAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<NotaDTO>>> ObtenerTodas(
+        public async Task<ActionResult<RespuestaPaginada<NotaDTO>>> ObtenerTodas(
         [FromQuery] FiltroNotasDTO filtros,
         CancellationToken cancellationToken)
         {
@@ -52,12 +53,12 @@ namespace TaskNotesAPI.Controllers
                 return Unauthorized();
             }
 
-            var notas = await _notaService.ObtenerTodasAsync(
+            var resultado = await _notaService.ObtenerTodasAsync(
                 filtros,
                 usuarioId,
                 cancellationToken);
 
-            return Ok(notas);
+            return Ok(resultado);
         }
 
         [HttpGet("{notaId:int}")]

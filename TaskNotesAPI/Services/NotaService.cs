@@ -2,6 +2,7 @@
 using TaskNotesAPI.Data;
 using TaskNotesAPI.DTOs.Notas;
 using TaskNotesAPI.Entities;
+using TaskNotesAPI.Helpers;
 using TaskNotesAPI.Interfaces;
 
 namespace TaskNotesAPI.Services
@@ -62,7 +63,7 @@ namespace TaskNotesAPI.Services
             };
         }
 
-        public async Task<List<NotaDTO>> ObtenerTodasAsync(
+        public async Task<RespuestaPaginada<NotaDTO>> ObtenerTodasAsync(
         FiltroNotasDTO filtros,
         string usuarioId,
         CancellationToken cancellationToken)
@@ -99,8 +100,17 @@ namespace TaskNotesAPI.Services
                     nota.EsImportante == filtros.EsImportante.Value);
             }
 
-            return await query
+            var totalRegistros = await query.CountAsync(cancellationToken);
+
+            var totalPaginas = (int)Math.Ceiling(
+                totalRegistros / (double)filtros.CantidadPorPagina);
+
+            var notas = await query
                 .OrderByDescending(nota => nota.FechaCreacion)
+                .Skip(
+                    (filtros.Pagina - 1) *
+                    filtros.CantidadPorPagina)
+                .Take(filtros.CantidadPorPagina)
                 .Select(nota => new NotaDTO
                 {
                     Id = nota.Id,
@@ -113,6 +123,15 @@ namespace TaskNotesAPI.Services
                     CategoriaNombre = nota.Categoria.Nombre
                 })
                 .ToListAsync(cancellationToken);
+
+            return new RespuestaPaginada<NotaDTO>
+            {
+                Pagina = filtros.Pagina,
+                CantidadPorPagina = filtros.CantidadPorPagina,
+                TotalRegistros = totalRegistros,
+                TotalPaginas = totalPaginas,
+                Datos = notas
+            };
         }
 
         public async Task<NotaDTO?> ObtenerPorIdAsync(

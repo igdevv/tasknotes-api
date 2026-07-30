@@ -1,4 +1,5 @@
 ﻿using TaskNotesAPI.DTOs.Notas;
+using TaskNotesAPI.Helpers;
 
 namespace TaskNotesAPI.Interfaces
 {
@@ -9,7 +10,7 @@ namespace TaskNotesAPI.Interfaces
         string usuarioId,
         CancellationToken cancellationToken);
 
-        Task<List<NotaDTO>> ObtenerTodasAsync(
+        Task<RespuestaPaginada<NotaDTO>> ObtenerTodasAsync(
         FiltroNotasDTO filtros,
         string usuarioId,
         CancellationToken cancellationToken);
